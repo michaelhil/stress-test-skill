@@ -22,10 +22,10 @@ Read the files named in the plan, in the main context. Grep for key symbols only
 ### 4. Critique along five axes
 For each axis, either cite a concrete element of the plan (specific file, step, decision) with the problem and proposed fix, or explicitly pass with one sentence of reasoning. No vague complaints. No "looks good overall" summaries.
 
-1. **Correctness & consistency** — logic errors, missed edge cases, race conditions, wrong assumptions about APIs, internal contradictions within the plan
+1. **Correctness & consistency** — logic errors, missed edge cases, race conditions, wrong assumptions about APIs, internal contradictions within the plan, and basic verifiability (how will the user know it worked?)
 2. **Fit with the existing project** — conventions, patterns, CLAUDE.md rules, architectural constraints; does the plan match what's already there
-3. **Simplicity & bloat** — unnecessary files, deps, abstractions, config flags, feature-flag scaffolding, premature generality; is there a materially simpler approach
-4. **Refactor opportunities** — adjacent cleanup that should happen in the same PR (in-scope) and adjacent cleanup that should *not* (out-of-scope, with reason). Be explicit about both lists.
+3. **Simplicity & bloat** — *scope: what the plan adds.* Unnecessary files, deps, abstractions, config flags, feature-flag scaffolding, premature generality; is there a materially simpler approach. Cleanup of existing code belongs in axis 4.
+4. **Refactor opportunities** — *scope: existing code the plan touches or reveals.* Adjacent cleanup that should happen in the same PR (in-scope) and adjacent cleanup that should *not* (out-of-scope, with reason). Be explicit about both lists. Additions the plan makes belong in axis 3.
 5. **Tech debt** — debt paid, debt added, debt ignored
 
 Per-axis concrete prompts live in [references/axes-checklist.md](references/axes-checklist.md). Load that file at the start of step 4.

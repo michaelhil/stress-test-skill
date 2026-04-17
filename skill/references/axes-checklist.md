@@ -1,6 +1,6 @@
 # Axes Checklist
 
-Concrete prompts for step 4 of the stress-test flow. Apply every prompt under each axis. A finding must name a concrete plan element (file, step, decision) — no vague complaints.
+Concrete prompts for step 4 of the stress-test flow. The prompts inform each axis pass — they are *not* a requirement to produce one finding per prompt. Walk each axis once; surface findings where they exist, explicitly pass otherwise. A finding must name a concrete plan element (file, step, decision) — no vague complaints.
 
 ## 1. Correctness & consistency
 - Are the steps correct in the order given? Any step that depends on a later step?

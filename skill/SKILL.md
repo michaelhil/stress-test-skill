@@ -34,7 +34,7 @@ Per-axis concrete prompts live in [references/axes-checklist.md](references/axes
 Whenever a finding depends on user intent (which tradeoff to make, which style to match, whether to expand scope), ask via the **AskUserQuestion tool**. Rules:
 - Use AskUserQuestion, never free-text prompts. The user wants clickable options.
 - 2–4 suggested options per question, plus free-text fallback.
-- Maximum 5 questions across the whole review.
+- Maximum 5 questions across the whole review (not per axis). If uncertainty remains in later axes after the cap is reached, raise it as inline text inside the finding ("assumes X; flag if wrong"), not as an additional question.
 - Only ask questions that would materially change a finding or the revised plan. No questions for the sake of questions.
 
 ### 6. Produce the revised plan
@@ -54,7 +54,7 @@ After the user answers, return a revised plan containing, in order:
    |------|-----|-----|
    | ...  | ... | ... |
 
-4. **Rejected alternatives** — only include if alternatives were actually considered during the review. Do not pad.
+**Stop here.** Hand control back to the user. Do not start implementing the revised plan — implementation is a separate invocation.
 
 ## Anti-patterns (refuse these)
 - Rubber-stamp passes across all axes with no specifics
@@ -64,6 +64,34 @@ After the user answers, return a revised plan containing, in order:
 - Free-text clarifying questions instead of AskUserQuestion
 - Spawning Explore subagents — read in main context
 - Attacking a strawman: if you misread the plan, fix the reading and re-critique
+
+## Worked example (calibration — not a template to copy)
+
+*Original plan (summary):* "Add a `/export` endpoint to `server.ts` that dumps the `sessions` table as CSV. Add a new `src/core/export/csvWriter.ts` utility with a configurable delimiter and header-casing options."
+
+*Findings (abbreviated):*
+
+- **Correctness — axis 1.** Plan doesn't say how large `sessions` can get. For >100k rows the CSV build blows memory. *Fix: stream rows via async iterator.* Verifiability: suggest `curl /export | wc -l` against a known row count.
+- **Fit — axis 2.** Existing exports in `src/core/api/` use route files with snake_case symbols; the plan proposes camelCase `csvWriter.ts`. Inconsistent.
+- **Simplicity — axis 3.** Configurable delimiter and header-casing have no current caller. Speculative generality — drop both until a second caller exists.
+- **Refactor — axis 4.** In-scope: `src/core/api/server.ts:142` already has near-duplicate CSV logic for the `audits` endpoint; collapse both into the new utility. Out-of-scope: the broader rewrite of `api/server.ts` route registration — tempting but bigger than this PR.
+- **Tech debt — axis 5.** No new debt if the streaming fix lands. Plan as written adds debt (the speculative options).
+
+*Inline question (via AskUserQuestion):* "Collapse the existing `audits` CSV into the new utility in this PR?" → options: yes / no (defer) / other.
+
+*Revised plan:* single streaming `csvWriter` (no options), used by both `/export` and `/audits`, file named to match existing convention.
+
+*Disposition table:*
+
+| Finding | Disposition | Reason |
+|---|---|---|
+| Streaming for large exports | accepted | prevents OOM |
+| File/symbol casing | accepted | matches existing convention |
+| Drop configurable options | accepted | no second caller |
+| Collapse `audits` duplicate | accepted | per user answer |
+| Broader route-registration rewrite | rejected | out of scope for this PR |
+
+Keep findings this concrete in your own reviews.
 
 ## Handling edge cases
 - **No plan in context**: ask the user to paste or reference it. Do not fabricate.
